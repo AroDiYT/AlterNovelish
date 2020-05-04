@@ -23,6 +23,7 @@ namespace BotTemplate.Modules {
 			await ctx.RespondAsync($"\"{note.Value}\"\n by <@{note.Author}>");
 		}
         [Command("new")]
+		[RequirePermissions(Permissions.ManageMessages)]
         [Description("Create a new note.")]
 		public async Task NewNoteAsync(CommandContext ctx) {
 			var note = new Note();
