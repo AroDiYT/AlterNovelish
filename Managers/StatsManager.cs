@@ -123,6 +123,21 @@ namespace BotTemplate.Managers {
 			HP_max = @HP_max, HP_current = @HP_current, ATK = @ATK, MELEE = @MELEE,
             RANGED = @RANGED, MAGIC = @MAGIC, Energy_max = @Energy_max, Energy_current = @Energy_current, SP = @SP WHERE PID = @PID",cc);
         }
+		public static async Task RestAsync(ulong ID)
+        { 
+			var cc = await StatsManager.GetAsync(ID);
+            var occ = cc;
+			cc.HP_current += cc.HP_max/2;
+            cc.Energy_current += cc.Energy_max/2;
+			if(cc.HP_current > cc.HP_max)
+				cc.HP_current = cc.HP_max;
+			if(cc.Energy_current > cc.Energy_max)
+				cc.Energy_current = cc.Energy_max;
+            Cache.TryUpdate(ID, cc, occ);
+			await _db.DbConn.ExecuteAsync(@"UPDATE Stats SET
+			HP_max = @HP_max, HP_current = @HP_current, ATK = @ATK, MELEE = @MELEE,
+            RANGED = @RANGED, MAGIC = @MAGIC, Energy_max = @Energy_max, Energy_current = @Energy_current, SP = @SP WHERE PID = @PID",cc);
+        }
         public static async Task SPAsync(ulong ID, int Amount)
         {
             var cc = await StatsManager.GetAsync(ID);

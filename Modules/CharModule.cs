@@ -224,6 +224,17 @@ namespace BotTemplate.Modules {
 			}
 			
 		}
+		[Command("Rest")]
+		[Cooldown(1,100,CooldownBucketType.User)]
+		public async Task RestAsync(CommandContext ctx)
+		{
+			DiscordUser auth = ctx.User;
+			var cc = await StatsManager.GetAsync(auth.Id);
+			if(cc == null)
+			 return;
+			await StatsManager.RestAsync(auth.Id);
+			await ctx.RespondAsync("You have rested a little, restoring some Health and Energy");
+		}
 		[Command("Enhance"), Aliases("up")]
 		public async Task UpAsync(CommandContext ctx)
 		{
