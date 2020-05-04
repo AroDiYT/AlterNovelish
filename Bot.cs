@@ -118,6 +118,7 @@ namespace BotTemplate {
 					await CharManager.XpAsync(e.Message.Author.Id, (e.Message.Content.Length/10));
 					var mem = await e.Guild.GetMemberAsync(e.Author.Id);
 					await mem.SendMessageAsync($"{check.Name} gained {(e.Message.Content.Length/10)} XP");
+					Console.WriteLine(mem.Mention + " earned " + (e.Message.Content.Length/10) + " XP");
 				}
 			};
 
