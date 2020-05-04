@@ -58,7 +58,7 @@ namespace BotTemplate.Modules {
         }
         [Command("fix")]
         [RequirePermissions(Permissions.Administrator)]
-        public async Task FixAsync(CommandContext ctx, DiscordUser victim, int Amount)
+        public async Task FixAsync(CommandContext ctx, DiscordUser victim)
         {
             var embeds = new DiscordEmbedBuilder
                 {
