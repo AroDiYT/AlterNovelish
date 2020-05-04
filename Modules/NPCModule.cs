@@ -32,7 +32,7 @@ namespace BotTemplate.Modules {
 					ThumbnailUrl = note.Ref,
                     Color = DiscordColor.Blue
                 };
-            embeds = embeds.AddField("Info", $"**`Damage:`** -> __{note.ATK}__\n\n**`Roll Bonus`** **(**__{note.MBonus}__**)Melee**\n**(**__{note.RBonus}__**)Ranged**\n**(**__{note.MagBonus}__**)Magic**" 
+            embeds = embeds.AddField("Info", $"**`Damage:`** -> __{note.ATK}__\n\n**`Roll Bonus`**\n **(**__{note.MBonus}__**)Melee**\n**(**__{note.RBonus}__**)Ranged**\n**(**__{note.MagBonus}__**)Magic**" 
             +$"\n\n**`Health`** __{note.HP_current}__**/**__{note.HP_max}__");
             await ctx.RespondAsync(embed : embeds);
         }
