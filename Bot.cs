@@ -88,7 +88,7 @@ namespace BotTemplate {
 								await e.Context.RespondAsync("You do not have permission to use this command.");
 								return;
 							}
-							else
+							else if(failed.GetType() == typeof(CooldownAttribute))
 							{
 								if (e.Exception.Message == "One or more pre-execution checks failed.") {
 									var time = e.Command.GetType().GetCustomAttributes(typeof(CooldownAttribute), true);
