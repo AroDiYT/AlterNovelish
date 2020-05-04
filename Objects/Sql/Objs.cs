@@ -16,6 +16,10 @@ namespace BotTemplate.Objects.Sql {
 		public int Level { get; set; }
 		public int Xp { get; set; }
 	}
+	public class Currency {
+		public ulong PID { get; set; }
+		public int Balance { get; set; }
+	}
 	public class Stats {
 		public ulong PID { get; set; }
 		public int HP_max { get; set; }

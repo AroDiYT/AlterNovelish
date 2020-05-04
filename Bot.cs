@@ -20,6 +20,7 @@ using BotTemplate.Objects.Json;
 namespace BotTemplate {
 	public class Bot {
 		public DiscordClient Client { get; private set; }
+		public static DiscordClient client2 { get; set;}
 		public BotConfig Config { get; private set; }
 		public Database Db { get; private set; }
 		public CancellationTokenSource CancellationTokenSource { get; private set; }
@@ -34,6 +35,7 @@ namespace BotTemplate {
 
 					UseInternalLogHandler = true
 				});
+			Bot.client2 = this.Client;
 		}
 
 		private void PostInitialize() {
@@ -119,6 +121,7 @@ namespace BotTemplate {
 			FamilyManager.Initialize(this.Db);
 			StatsManager.Initialize(this.Db);
 			ChannelManager.Initialize(this.Db);
+			CurrencyManager.Initialize(this.Db);
 		}
 
 		public async Task RunAsync() {

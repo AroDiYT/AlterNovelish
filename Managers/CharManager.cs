@@ -3,6 +3,11 @@ using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using System.Linq;
 
+using DSharpPlus;
+using DSharpPlus.CommandsNext;
+using DSharpPlus.CommandsNext.Attributes;
+using DSharpPlus.Entities;
+
 using Dapper;
 
 using BotTemplate.Objects.Sql;
@@ -103,6 +108,20 @@ namespace BotTemplate.Managers {
 			result.Level += 1;
 			await _db.DbConn.ExecuteAsync("UPDATE Characters SET Level = @Level, Xp = @Xp WHERE PID = @PID",result);
 			await StatsManager.SPAsync(PID, 3);
+			//var mem = await Bot.Client.Guild.GetMemberAsync(PID);
+			var c = Bot.client2;
+			var all = c.Guilds;
+			foreach(var e in all)
+			{
+				DiscordGuild gs = e.Value;
+				if(gs.GetMemberAsync(PID) != null)
+				{
+					var mem = await gs.GetMemberAsync(PID);
+					await mem.SendMessageAsync($"You've leveled up!\n\n**`Level`** `{result.Level -1}` **->** `{result.Level}`");
+					return;
+				}
+			}
+			
 		}
 		public static async Task XpAsync(ulong PID, int Amount)
 		{
