@@ -135,6 +135,7 @@ namespace BotTemplate {
 			StatsManager.Initialize(this.Db);
 			ChannelManager.Initialize(this.Db);
 			CurrencyManager.Initialize(this.Db);
+			NPCManager.Initialize(this.Db);
 		}
 
 		public async Task RunAsync() {

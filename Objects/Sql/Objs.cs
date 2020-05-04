@@ -20,6 +20,22 @@ namespace BotTemplate.Objects.Sql {
 		public ulong PID { get; set; }
 		public int Balance { get; set; }
 	}
+	public class NPC {
+		public int NPCID { get; set; }
+		public string Name { get; set; }
+		public string Desc { get; set; }
+		public string Ref { get; set; }
+		public int HP_current { get; set; }
+		public int HP_max { get; set; }
+		public int ATK { get; set; }
+		public int RBonus { get; set; }
+		public int MBonus { get; set; }
+		public int MagBonus { get; set; }
+	}
+	public class Proxy {
+		public ulong PID { get; set; }
+		public int NPCID { get; set; }
+	}
 	public class Stats {
 		public ulong PID { get; set; }
 		public int HP_max { get; set; }
