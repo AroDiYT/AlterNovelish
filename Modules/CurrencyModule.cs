@@ -107,7 +107,7 @@ namespace BotTemplate.Modules {
             await CurrencyManager.SyncAsync(ACur);
             var embeds = new DiscordEmbedBuilder
                 {
-                    Description = $"{ctx.User.Mention} **Transfers** `{Amount}` **Enzea's over to** {user.Mention}",
+                    Description = $"{ctx.User.Mention} **Transfers** `{Amount}🌸` **Enzea's over to** {user.Mention}",
                     Color = DiscordColor.Gray
                 };
             await ctx.RespondAsync(embed: embeds);

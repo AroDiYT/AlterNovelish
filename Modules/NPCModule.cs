@@ -44,6 +44,8 @@ namespace BotTemplate.Modules {
          if(name == "self")
          {
              NPCManager.ProxySelfAsync(ctx.User.Id);
+             await ctx.RespondAsync("You are unproxied.");
+             return;
          }
           var note = await NPCManager.SearchAsync(name);
 			if (note == null)
