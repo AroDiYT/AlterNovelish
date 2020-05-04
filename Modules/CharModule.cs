@@ -225,7 +225,7 @@ namespace BotTemplate.Modules {
 			
 		}
 		[Command("Rest")]
-		[Cooldown(1,100,CooldownBucketType.User)]
+		[Cooldown(1,2*(60*60),CooldownBucketType.User)]
 		public async Task RestAsync(CommandContext ctx)
 		{
 			DiscordUser auth = ctx.User;

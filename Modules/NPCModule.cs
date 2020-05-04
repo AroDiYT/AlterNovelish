@@ -28,7 +28,7 @@ namespace BotTemplate.Modules {
 
 			var embeds = new DiscordEmbedBuilder
                 {
-                    Description = $"**Name**: `{note.Name}`\n**Description**: `{note.Desc}`",
+                    Description = $"**Name**: `{note.Name}`\n**Description**: {note.Desc}",
 					ThumbnailUrl = note.Ref,
                     Color = DiscordColor.Blue
                 };

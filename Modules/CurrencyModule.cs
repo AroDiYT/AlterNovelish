@@ -91,6 +91,27 @@ namespace BotTemplate.Modules {
             await CurrencyManager.SyncAsync(cc);
             await ctx.RespondAsync(embed: embeds);
         }
+        [Command("Transfer")]
+        public async Task TransferAsync(CommandContext ctx, DiscordUser user, int Amount)
+        {
+            var ACur = await CurrencyManager.GetAsync(ctx.User.Id);
+            if(ACur.Balance < Amount)
+            {
+                await ctx.RespondAsync("You don't have that much Enzea's");
+                return;
+            }
+            var TCur = await CurrencyManager.GetAsync(user.Id);
+            TCur.Balance += Amount;
+            ACur.Balance -= Amount;
+            await CurrencyManager.SyncAsync(TCur);
+            await CurrencyManager.SyncAsync(ACur);
+            var embeds = new DiscordEmbedBuilder
+                {
+                    Description = $"{ctx.User.Mention} **Transfers** `{Amount}` **Enzea's over to** {user.Mention}",
+                    Color = DiscordColor.Gray
+                };
+            await ctx.RespondAsync(embed: embeds);
+        }
     }
 }
 		
