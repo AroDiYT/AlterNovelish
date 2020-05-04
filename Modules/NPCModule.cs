@@ -164,6 +164,167 @@ namespace BotTemplate.Modules {
 			await ch.DeleteAsync();
 		
         }
+        [Command("edit")]
+        [Description("edit an npc")]
+        [RequirePermissions(Permissions.ManageChannels)]
+        public async Task NPCEditAsync(CommandContext ctx, [RemainingText] string name = null)
+        {
+            var npc = new NPC();
+            var prox = npc;
+
+            if(string.IsNullOrEmpty(name))
+            {
+                var pr = await NPCManager.ProxyGetAsync(ctx.User.Id);
+                if(pr == null)
+                {
+                    await ctx.RespondAsync("You are not proxied or haven't supplied an npc name.");
+                    return;
+                }
+                prox.NPCID = pr.NPCID;
+                var prs = await NPCManager.GetAsync(pr.NPCID);
+                prox.Name = prs.Name;
+                prox.Ref = prs.Ref;
+                prox.Desc = prs.Desc;
+            }
+            else
+            {
+                var npcs = await NPCManager.SearchAsync(name);
+                if(npcs == null)
+                {
+                    await ctx.RespondAsync("There is no npc with the name: " + name);
+                    return;
+                }
+                prox.NPCID = npcs.NPCID;
+                prox.Name = npcs.Name;
+                prox.Ref = npcs.Ref;
+                prox.Desc = npcs.Desc;
+            }
+            var rss = await Interactivity.WaitForAnswerAsync(ctx, "Are you sure you want to edit " + prox.Name, channel: ctx.Channel);
+			if (rss == null) {
+				await ctx.RespondAsync("Ded");
+				return;
+			}
+            if(rss.Content.ToLower() != "yes")
+            {
+                await ctx.RespondAsync("Oke then.");
+                return;
+            }
+            var overwrites = new DiscordOverwriteBuilder[] {
+				new DiscordOverwriteBuilder().Allow(Permissions.AccessChannels).For(ctx.Member),
+				new DiscordOverwriteBuilder().Deny(Permissions.AccessChannels).For(ctx.Guild.EveryoneRole)
+			};
+
+			var ch = await ctx.Guild.CreateTextChannelAsync($"{ctx.User.Username}{ctx.User.Discriminator}-npc",
+					overwrites: overwrites);
+            await ch.SendMessageAsync($"{ctx.User.Mention}, here you will be Editing NPC " + prox.Name);
+            async Task suicide(string why = "") {
+				await ch.SendMessageAsync($"{why ?? ""} Stopping setup.");
+				await ch.SendMessageAsync("This channel shall kermit sewer side in 10 seconds.");
+				await Task.Delay(10 * 1000);
+				await ch.DeleteAsync();
+			};
+            var r = await Interactivity.WaitForAnswerAsync(ctx, "Tell me the NPC's name? or say 'old' for the old name.", channel: ch);
+			if (r == null) {
+				await suicide();
+				return;
+			}
+            if(r.Content.ToLower() == "old")
+            {
+                npc.Name = prox.Name;
+            }
+            else
+            {
+                npc.Name = r.Content;
+            }
+                
+            r = await Interactivity.WaitForAnswerAsync(ctx, "Tell me the NPC's description? or say 'old' for previous", channel: ch);
+			if (r == null) {
+				await suicide();
+				return;
+			}
+            if(r.Content.ToLower() == "old")
+            {
+                npc.Desc = prox.Desc;
+            }
+            else
+            {
+                npc.Desc = r.Content;
+            }
+                npc.Desc = prox.Desc;
+            r = await Interactivity.WaitForAnswerAsync(ctx, $"Now what is your NPC's appearance? (upload an image, a url to an image, or 'none' or 'old')",
+													   1000 * 60 * 60, ch);
+			if (r == null) {
+				await suicide();
+				return;
+			}
+			if (string.IsNullOrEmpty(r.Content)) {
+				if (r.Attachments.Count == 0) {
+					await suicide("No image given.");
+					return;
+				}
+                using (WebClient webClient = new WebClient()) 
+{
+                webClient.DownloadFile(r.Attachments.FirstOrDefault().Url, "./image.png");
+                DiscordChannel cc = await ctx.Client.GetChannelAsync(705752802806202427);
+                DiscordMessage ms = await cc.SendFileAsync("./image.png", ctx.User.Username, false, null, null);
+                npc.Ref = ms.Attachments.FirstOrDefault().Url;
+}
+			} 
+            else if(r.Content.ToLowerInvariant() == "old") 
+            {
+                npc.Ref = prox.Ref;
+            }
+            else if (r.Content.ToLowerInvariant() != "none") {
+				if (Uri.TryCreate(r.Content, UriKind.Absolute, out var uri)
+					&& (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)) {
+					npc.Ref = r.Content;
+				} else {
+					await suicide("Invalid Uri.");
+					return;
+				}
+			} 
+            else {
+				npc.Ref = "https://cdn.discordapp.com/attachments/704779039474319450/705474712607785051/7whzrBzDd7U2Tey7UAAAAAElFTkSuQmCC.png";
+			}
+            var rs = await Interactivity.WaitForAnswerINTAsync(ctx, "Tell me the NPC's Melee Bonus", channel: ch);
+			if (r == null) {
+				await suicide();
+				return;
+			}
+            npc.MBonus = rs;
+            rs = await Interactivity.WaitForAnswerINTAsync(ctx, "Tell me the NPC's Ranged Bonus", channel: ch);
+			if (r == null) {
+				await suicide();
+				return;
+			}
+            npc.RBonus = rs;
+            rs = await Interactivity.WaitForAnswerINTAsync(ctx, "Tell me the NPC's Magic Bonus", channel: ch);
+			if (r == null) {
+				await suicide();
+				return;
+			}
+            npc.MagBonus = rs;
+            rs = await Interactivity.WaitForAnswerINTAsync(ctx, "Tell me the NPC's Damage", channel: ch);
+			if (r == null) {
+				await suicide();
+				return;
+			}
+            npc.ATK = rs;
+            rs = await Interactivity.WaitForAnswerINTAsync(ctx, "Tell me the NPC's Health", channel: ch);
+			if (r == null) {
+				await suicide();
+				return;
+			}
+            npc.HP_current = rs;
+            npc.HP_max = rs;
+            
+            npc.NPCID = prox.NPCID;
+            await NPCManager.SyncAsync(npc);
+            await ch.SendMessageAsync("This channel shall kermit sewer side in 10 seconds.");
+			await Task.Delay(10 * 1000);
+			await ch.DeleteAsync();
+		
+        }
     }
 }
 		

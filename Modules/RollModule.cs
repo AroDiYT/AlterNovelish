@@ -28,7 +28,7 @@ namespace BotTemplate.Modules {
           await ctx.RespondAsync(embed : embeds);
         }
         [Command("attack"), Aliases("atk")]
-        [Cooldown(2, 8, CooldownBucketType.Channel)]
+        [Cooldown(2, 10, CooldownBucketType.Channel)]
         public async Task AtkRollAsync(CommandContext ctx, DiscordUser user)
         {
             var prox = await NPCManager.ProxyGetAsync(ctx.User.Id);
@@ -235,7 +235,7 @@ namespace BotTemplate.Modules {
             
         }
         [Command("ranged"), Aliases("ratk")]
-        [Cooldown(2, 8, CooldownBucketType.Channel)]
+        [Cooldown(2, 10, CooldownBucketType.Channel)]
         public async Task RAtkRollAsync(CommandContext ctx, DiscordUser user)
         {
             var prox = await NPCManager.ProxyGetAsync(ctx.User.Id);
@@ -441,7 +441,7 @@ namespace BotTemplate.Modules {
             }
         }
         [Command("magic"), Aliases("mag")]
-        [Cooldown(2, 8, CooldownBucketType.Channel)]
+        [Cooldown(2, 10, CooldownBucketType.Channel)]
         public async Task MAtkRollAsync(CommandContext ctx, DiscordUser user)
         {
             var prox = await NPCManager.ProxyGetAsync(ctx.User.Id);
