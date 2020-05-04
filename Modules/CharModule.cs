@@ -136,7 +136,11 @@ namespace BotTemplate.Modules {
 			}
 			var sc = await StatsManager.GetAsync(ctx.User.Id);
 			if(sc == null) {
-
+				var ccs = new Currency() {
+					PID = ctx.User.Id,
+					Balance = 100
+				};
+				await CurrencyManager.SyncAsync(ccs);
 			
 			int sps = 6;
 			var stt = new Stats() {

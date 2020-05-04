@@ -56,6 +56,22 @@ namespace BotTemplate.Modules {
             await CurrencyManager.TakeAsync(victim.Id, Amount);
             await ctx.RespondAsync(embed: embeds);
         }
+        [Command("fix")]
+        [RequirePermissions(Permissions.Administrator)]
+        public async Task FixAsync(CommandContext ctx, DiscordUser victim, int Amount)
+        {
+            var embeds = new DiscordEmbedBuilder
+                {
+                    Description = $"**{victim.Mention}'s Balance:**\n**`100🌸 - Enzea`**",
+                    Color = DiscordColor.Gray
+                };
+            var cc = new Currency() {
+                PID = victim.Id,
+                Balance = 100
+            };
+            await CurrencyManager.SyncAsync(cc);
+            await ctx.RespondAsync(embed: embeds);
+        }
     }
 }
 		
