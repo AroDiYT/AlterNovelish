@@ -44,8 +44,7 @@ namespace BotTemplate.Managers {
 			Name = @Name, Age = @Age, Gender = @Gender,  Desc = @Desc, Ref = @Ref",obj);
 			if (!Cache.ContainsKey(obj.PID))
             {
-				var result = await _db.DbConn.QueryFirstOrDefaultAsync<Character>("SELECT * FROM Characters WHERE PID = @PID",
-																		new { obj.PID });
+				var result = await _db.DbConn.QueryFirstOrDefaultAsync<Character>("SELECT * FROM Characters WHERE PID = @PID",obj);
 				if (result != null)
 				{
 					Cache.TryAdd(result.PID, result);
@@ -53,8 +52,7 @@ namespace BotTemplate.Managers {
 			}
 			else
 			{
-				var result2 = await _db.DbConn.QueryFirstOrDefaultAsync<Character>("SELECT * FROM Characters WHERE PID = @PID",
-																		new { obj.PID });
+				var result2 = await _db.DbConn.QueryFirstOrDefaultAsync<Character>("SELECT * FROM Characters WHERE PID = @PID",obj);
 				if (result2 != null)
 				{
 					var cc = new Character();
@@ -127,6 +125,29 @@ namespace BotTemplate.Managers {
 																							result);
 			}
 			
+		}
+		public static async Task CacheAsync(ulong PID)
+		{
+			if (!Cache.ContainsKey(PID))
+            {
+				var result = await _db.DbConn.QueryFirstOrDefaultAsync<Character>("SELECT * FROM Characters WHERE PID = @PID",
+																		new { PID });
+				if (result != null)
+				{
+					Cache.TryAdd(result.PID, result);
+				}
+			}
+			else
+			{
+				var result2 = await _db.DbConn.QueryFirstOrDefaultAsync<Character>("SELECT * FROM Characters WHERE PID = @PID",
+																		new { PID });
+				if (result2 != null)
+				{
+					var cc = new Character();
+					Cache.TryGetValue(PID, out cc);
+					Cache.TryUpdate(PID, result2, cc);
+				}
+			}
 		}
 	}
 }

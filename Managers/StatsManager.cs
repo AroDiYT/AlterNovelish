@@ -133,5 +133,26 @@ namespace BotTemplate.Managers {
 			HP_max = @HP_max, HP_current = @HP_current, ATK = @ATK, MELEE = @MELEE,
             RANGED = @RANGED, MAGIC = @MAGIC, Energy_max = @Energy_max, Energy_current = @Energy_current, SP = @SP WHERE PID = @PID",cc);
         }
+        public static async Task CacheAsync(ulong PID)
+		{
+			if (!Cache.ContainsKey(PID))
+            {
+				var result = await _db.DbConn.QueryFirstOrDefaultAsync<Stats>("SELECT * FROM Stats WHERE PID = @PID",
+																		new { PID });
+				if (result != null)
+				{
+					Cache.TryAdd(result.PID, result);
+				}
+			}
+			else
+			{
+				var result2 = await _db.DbConn.QueryFirstOrDefaultAsync<Stats>("SELECT * FROM Stats WHERE PID = @PID",
+																		new { PID });
+				if (result2 != null)
+				{
+					Cache.TryUpdate(PID, result2, null);
+				}
+			}
+		}
 	}
 }

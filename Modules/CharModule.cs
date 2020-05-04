@@ -273,6 +273,15 @@ namespace BotTemplate.Modules {
 			await StatsManager.SyncAsync(stt);
 			await ctx.RespondAsync("Done");
 		}
+		[Command("Cache")]
+		[Description("This reloads your profiles cache.")]
+		public async Task CacheAsync(CommandContext ctx, DiscordUser user = null)
+		{
+			DiscordUser v = user ?? ctx.User;
+			await StatsManager.CacheAsync(v.Id);
+			await CharManager.CacheAsync(v.Id);
+			await ctx.RespondAsync($"{v.Mention}'s profile has been reloaded.");
+		}
 		
     }
 }
