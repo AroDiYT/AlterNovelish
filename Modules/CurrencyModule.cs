@@ -37,6 +37,7 @@ namespace BotTemplate.Modules {
                     Description = $"**{victim.Mention}'s New Balance:**\n**`{cc.Balance + Amount}🌸 - Enzea`**",
                     Color = DiscordColor.Gray
                 };
+            embeds = embeds.WithFooter($"Added {Amount}🌸");
             await CurrencyManager.AddAsync(victim.Id, Amount);
             await ctx.RespondAsync(embed: embeds);
         }
@@ -53,6 +54,7 @@ namespace BotTemplate.Modules {
                     Description = $"**{victim.Mention}'s New Balance:**\n**`{cc.Balance}🌸 - Enzea`**",
                     Color = DiscordColor.Gray
                 };
+            embeds = embeds.WithFooter($"Took {Amount}🌸");
             await CurrencyManager.TakeAsync(victim.Id, Amount);
             await ctx.RespondAsync(embed: embeds);
         }
