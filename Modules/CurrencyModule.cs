@@ -74,6 +74,23 @@ namespace BotTemplate.Modules {
             await CurrencyManager.SyncAsync(cc);
             await ctx.RespondAsync(embed: embeds);
         }
+        [Command("work")]
+        [Aliases("w")]
+        [Cooldown(1,120,CooldownBucketType.User)]
+        public async Task WorkAsync(CommandContext ctx)
+        {
+            var cc = await CurrencyManager.GetAsync(ctx.User.Id);
+            var ob = cc.Balance;
+            cc.Balance += _rng.Next(101);
+            var embeds = new DiscordEmbedBuilder
+                {
+                    Description = $"**{ctx.User.Mention} worked for** **`{cc.Balance - ob}🌸 - Enzea`**",
+                    Color = DiscordColor.Gray
+                };
+            embeds = embeds.WithFooter($"Added {cc.Balance - ob}🌸");
+            await CurrencyManager.SyncAsync(cc);
+            await ctx.RespondAsync(embed: embeds);
+        }
     }
 }
 		

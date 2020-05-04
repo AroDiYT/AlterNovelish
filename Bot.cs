@@ -80,13 +80,26 @@ namespace BotTemplate {
 						await e.Context.RespondAsync($"You either spelled the command wrong or it doesn't exist in specified group.");
 						return;
 					}
-					if (e.Exception.Message == "One or more pre-execution checks failed.") {
-						var time = e.Command.GetType().GetCustomAttributes(typeof(CooldownAttribute), true);
-						if(time != null)
-						{
-							await e.Context.RespondAsync($"The command is on cooldown. {((e.Command.ExecutionChecks[0] as CooldownAttribute).GetBucket(e.Context).ResetsAt - DateTimeOffset.UtcNow).TotalSeconds.ToString("N0")} seconds left");						
+					if (e.Exception.GetType() == typeof(ChecksFailedException)) {
+						var ce = (ChecksFailedException)e.Exception;
+						foreach (var failed in ce.FailedChecks) {
+							if (failed.GetType() == typeof(RequirePermissionsAttribute)) {
+							// permission failed
+								await e.Context.RespondAsync("You do not have permission to use this command.");
+								return;
+							}
+							else
+							{
+								if (e.Exception.Message == "One or more pre-execution checks failed.") {
+									var time = e.Command.GetType().GetCustomAttributes(typeof(CooldownAttribute), true);
+									if(time != null)
+									{
+										await e.Context.RespondAsync($"The command is on cooldown. {((e.Command.ExecutionChecks[0] as CooldownAttribute).GetBucket(e.Context).ResetsAt - DateTimeOffset.UtcNow).TotalSeconds.ToString("N0")} seconds left");						
+									}
+									return;
+								}
+							}
 						}
-						return;
 					}
 					await e.Context.RespondAsync($"error: ```{e.Exception}```");
 				}
