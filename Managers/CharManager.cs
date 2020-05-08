@@ -93,7 +93,7 @@ namespace BotTemplate.Managers {
             {
                 var res = result;
 
-				result.Xp -= result.Level*100/2*4;
+				result.Xp -= Convert.ToInt32(result.Level*100/2.5*result.Level);
 				if(result.Xp < 0)
 					result.Xp = 0;
 				result.Level += 1;
@@ -102,12 +102,12 @@ namespace BotTemplate.Managers {
             }
 			result = await _db.DbConn.QueryFirstOrDefaultAsync<Character>("SELECT * FROM Characters WHERE PID = @PID",
 																	 new { PID });
-			result.Xp -= result.Level*100/2*4;
+			result.Xp -= Convert.ToInt32(result.Level*100/2.5*result.Level);
 			if(result.Xp < 0)
 					result.Xp = 0;
 			result.Level += 1;
 			await _db.DbConn.ExecuteAsync("UPDATE Characters SET Level = @Level, Xp = @Xp WHERE PID = @PID",result);
-			await StatsManager.SPAsync(PID, 3);
+			await StatsManager.SPAsync(PID, 5);
 			//var mem = await Bot.Client.Guild.GetMemberAsync(PID);
 			var c = Bot.client2;
 			var all = c.Guilds;
@@ -134,7 +134,7 @@ namespace BotTemplate.Managers {
 			result = await _db.DbConn.QueryFirstOrDefaultAsync<Character>("SELECT * FROM Characters WHERE PID = @PID",
 																	 new { PID });
 			result.Xp += Amount;
-			if(result.Xp >= (result.Level*100/2*4))
+			if(result.Xp >= Convert.ToInt32(result.Level*100/2.5*result.Level))
 			{
 				await CharManager.LevelAsync(result.PID);
 			}
@@ -165,6 +165,60 @@ namespace BotTemplate.Managers {
 					var cc = new Character();
 					Cache.TryGetValue(PID, out cc);
 					Cache.TryUpdate(PID, result2, cc);
+				}
+			}
+		}
+		public static async Task CheatLevelAsync(ulong PID, int Amount)
+		{
+			if (Cache.TryGetValue(PID, out var result))
+            {
+                var res = result;
+				result.Level += Amount;
+				
+                Cache.TryUpdate(PID, result, res);
+            }
+			result = await _db.DbConn.QueryFirstOrDefaultAsync<Character>("SELECT * FROM Characters WHERE PID = @PID",
+																	 new { PID });
+			result.Level += Amount;
+			await _db.DbConn.ExecuteAsync("UPDATE Characters SET Level = @Level, Xp = @Xp WHERE PID = @PID",result);
+			await StatsManager.SPAsync(PID, 5*Amount);
+			//var mem = await Bot.Client.Guild.GetMemberAsync(PID);
+			var c = Bot.client2;
+			var all = c.Guilds;
+			foreach(var e in all)
+			{
+				DiscordGuild gs = e.Value;
+				if(gs.GetMemberAsync(PID) != null)
+				{
+					var mem = await gs.GetMemberAsync(PID);
+					await mem.SendMessageAsync($"You've leveled up!\n\n**`Level`** `{result.Level - Amount}` **->** `{result.Level}`");
+					return;
+				}
+			}
+			
+		}
+		public static async Task CheatResetAsync(Character obj)
+		{
+			await _db.DbConn.ExecuteAsync(@"INSERT INTO Characters VALUES (
+			@PID, @Name, @Age, @Gender, @Desc, @Ref, '1', '0'
+			) ON CONFLICT (PID) DO UPDATE SET
+			Name = @Name, Age = @Age, Gender = @Gender,  Desc = @Desc, Ref = @Ref, Level = @Level, Xp = @Xp",obj);
+			if (!Cache.ContainsKey(obj.PID))
+            {
+				var result = await _db.DbConn.QueryFirstOrDefaultAsync<Character>("SELECT * FROM Characters WHERE PID = @PID",obj);
+				if (result != null)
+				{
+					Cache.TryAdd(result.PID, result);
+				}
+			}
+			else
+			{
+				var result2 = await _db.DbConn.QueryFirstOrDefaultAsync<Character>("SELECT * FROM Characters WHERE PID = @PID",obj);
+				if (result2 != null)
+				{
+					var cc = new Character();
+					Cache.TryGetValue(obj.PID, out cc);
+					Cache.TryUpdate(obj.PID, result2, cc);
 				}
 			}
 		}

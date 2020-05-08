@@ -41,7 +41,7 @@ namespace BotTemplate.Modules {
 			
 			var embeds = new DiscordEmbedBuilder
                 {
-                    Description = $"**Name**: `{cc.Name}`\n**Age**: `{cc.Age}`\n**Gender**: `{cc.Gender}`\n**Description**: `{cc.Desc}`\n\n**Level**: `{cc.Level}` **[**`{cc.Xp}`**/**`{cc.Level*100/2*4}`**]**\n\n\n`From:` <@{cc.PID}>",
+                    Description = $"**Name**: `{cc.Name}`\n**Age**: `{cc.Age}`\n**Gender**: `{cc.Gender}`\n**Description**: `{cc.Desc}`\n\n**Level**: `{cc.Level}` **[**`{cc.Xp}`**/**`{Convert.ToInt32(cc.Level*100/2.5*cc.Level)}`**]**\n\n\n`From:` <@{cc.PID}>",
 					ThumbnailUrl = cc.Ref,
                     Color = DiscordColor.Blue
                 };

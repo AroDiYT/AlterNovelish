@@ -27,37 +27,6 @@ namespace BotTemplate.Modules {
                 };
           await ctx.RespondAsync(embed: embeds);
         }
-        [Command("add")]
-        [RequirePermissions(Permissions.Administrator)]
-        public async Task AddAsync(CommandContext ctx, DiscordUser victim, int Amount)
-        {
-            var cc = await CurrencyManager.GetAsync(victim.Id);
-            var embeds = new DiscordEmbedBuilder
-                {
-                    Description = $"**{victim.Mention}'s New Balance:**\n**`{cc.Balance + Amount}🌸 - Enzea`**",
-                    Color = DiscordColor.Gray
-                };
-            embeds = embeds.WithFooter($"Added {Amount}🌸");
-            await CurrencyManager.AddAsync(victim.Id, Amount);
-            await ctx.RespondAsync(embed: embeds);
-        }
-        [Command("take")]
-        [RequirePermissions(Permissions.Administrator)]
-        public async Task TakeAsync(CommandContext ctx, DiscordUser victim, int Amount)
-        {
-            var cc = await CurrencyManager.GetAsync(victim.Id);
-            cc.Balance -= Amount;
-            if(cc.Balance < 0)
-                cc.Balance = 0;
-            var embeds = new DiscordEmbedBuilder
-                {
-                    Description = $"**{victim.Mention}'s New Balance:**\n**`{cc.Balance}🌸 - Enzea`**",
-                    Color = DiscordColor.Gray
-                };
-            embeds = embeds.WithFooter($"Took {Amount}🌸");
-            await CurrencyManager.TakeAsync(victim.Id, Amount);
-            await ctx.RespondAsync(embed: embeds);
-        }
         [Command("fix")]
         [RequirePermissions(Permissions.Administrator)]
         public async Task FixAsync(CommandContext ctx, DiscordUser victim)

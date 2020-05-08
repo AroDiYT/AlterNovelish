@@ -58,6 +58,7 @@ namespace BotTemplate.Objects.Sql {
 		public int Energy_Cost { get; set; }
 	}
 	public class Inventory {
+		public int PID { get; set; }
 		public int ID { get; set; }
 		public int Amount { get; set; }
 		
