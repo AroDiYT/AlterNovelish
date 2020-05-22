@@ -5183,11 +5183,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/darii-chan/Desktop/AlterLife/dashbot/B2/BotTemplate.csproj",
+      "projectUniqueName": "/home/darii-chan/Desktop/AlterLife/dashbot/NewStrat/BotTemplate.csproj",
       "projectName": "BotTemplate",
-      "projectPath": "/home/darii-chan/Desktop/AlterLife/dashbot/B2/BotTemplate.csproj",
+      "projectPath": "/home/darii-chan/Desktop/AlterLife/dashbot/NewStrat/BotTemplate.csproj",
       "packagesPath": "/home/darii-chan/.nuget/packages/",
-      "outputPath": "/home/darii-chan/Desktop/AlterLife/dashbot/B2/obj/",
+      "outputPath": "/home/darii-chan/Desktop/AlterLife/dashbot/NewStrat/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/darii-chan/.nuget/NuGet/NuGet.Config"
@@ -5243,12 +5243,18 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.AspNetCore.App.Ref",
+            "version": "[3.1.2, 3.1.2]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.NETCore.App": {
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/3.1.201/RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/3.1.300/RuntimeIdentifierGraph.json"
       }
     }
   }

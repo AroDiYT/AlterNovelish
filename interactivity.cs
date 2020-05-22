@@ -64,7 +64,7 @@ namespace BotTemplate {
 				await channel.SendMessageAsync("Timed out.");
 				return 0;
 			}
-			if (int.TryParse(r.Result.Content, out res))
+			if (int.TryParse(r.Result.Content, out res) && res > -1)
 				return res;
 			}
 		}

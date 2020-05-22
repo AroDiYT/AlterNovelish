@@ -11,9 +11,10 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Interactivity;
+using DSharpPlus.Entities;
 
 using Newtonsoft.Json;
-
+using BotTemplate.Objects.Sql.Profile;
 using BotTemplate.Managers;
 using BotTemplate.Objects.Json;
 
@@ -104,24 +105,6 @@ namespace BotTemplate {
 					await e.Context.RespondAsync($"error: ```{e.Exception}```");
 				}
 			};
-			Client.MessageCreated += async (e) => {
-				var check = await CharManager.GetAsync(e.Message.Author.Id);
-				if(check == null)
-					return;
-				var cc = await ChannelManager.GetAsync(e.Channel.Id);
-				if(cc == null)
-					return;
-				if(cc.RP == false)
-					return;
-				if(e.Message.Content.Length > 10 && cc.RP == true)
-				{
-					await CharManager.XpAsync(e.Message.Author.Id, (e.Message.Content.Length/10));
-					var mem = await e.Guild.GetMemberAsync(e.Author.Id);
-					await mem.SendMessageAsync($"{check.Name} gained {(e.Message.Content.Length/10)} XP");
-					Console.WriteLine(mem.Mention + " earned " + (e.Message.Content.Length/10) + " XP");
-				}
-			};
-
 			cnext.RegisterCommands(System.Reflection.Assembly.GetExecutingAssembly());
 
 			this.Client.UseInteractivity(new InteractivityConfiguration() {
@@ -130,13 +113,60 @@ namespace BotTemplate {
 
 			/* Put Db initialization code here */
 			this.Db = new Database("./Resources/database.db");
-			NoteManager.Initialize(this.Db);
-			CharManager.Initialize(this.Db);
-			FamilyManager.Initialize(this.Db);
-			StatsManager.Initialize(this.Db);
-			ChannelManager.Initialize(this.Db);
-			CurrencyManager.Initialize(this.Db);
-			NPCManager.Initialize(this.Db);
+			ManageCharacter.Initialize(this.Db);
+			Helpers.Attack.InitCache();
+			Helpers.Owners.InitCache();
+			/*XP System*/
+			this.Client.MessageCreated += async (e) => {
+				if(e.Author.IsBot)
+					return;
+				if(Helpers.Tools.RNG.Next(5) == 0)
+					return;
+				var CH = await ManageCharacter.GetChannel(e.Channel.Id);
+				if(CH == null)
+					return;
+				if(CH.Category != ChannelCategory.Rp)
+					return;
+				int XP = e.Message.Content.Count()/100 + CH.XP + Helpers.Tools.RNG.Next(11);
+				if(XP > 6)
+				{
+					var Accg = new AccountGet() {
+						UID = e.Author.Id,
+						GID = e.Guild.Id
+					};
+					var Check = await ManageCharacter.GetAll(Acc: Accg);
+					if(Check == null)
+						return;
+					var OwnGet = new OwnerGet() {
+						UID = e.Author.Id,
+						GID = e.Guild.Id,
+						Slot = Check.Slot
+					};
+					var Own = await ManageCharacter.GetAll(OwnGet);
+					var ChrGet = new ChrGet() {
+						Entry = Own.CharEntry,
+					};
+					var Chr = await ManageCharacter.GetAll(ChrGet);
+					Chr.XP += XP;
+					DiscordMember mem = await e.Guild.GetMemberAsync(e.Author.Id);
+					await mem.SendMessageAsync($"**{Chr.Name}** earned `{XP}` **XP**");
+					if(Chr.XP >= Convert.ToInt32(Chr.Level*100.57/4.2*Chr.Level))
+					{
+						var olvl = Chr.Level;
+						begin:
+						Chr.XP -= Convert.ToInt32(Chr.Level*100.57/4.2*Chr.Level);
+						Chr.Level += 1;
+						Chr.SP += 5;
+						Chr.Balance += 60;
+						if(Chr.XP >= Convert.ToInt32(Chr.Level*100.57/4.2*Chr.Level))
+						goto begin;
+						await ManageCharacter.UpdateAsync(Chr);
+						await mem.SendMessageAsync($"**{Chr.Name}** Leveled! `{olvl}` → `{Chr.Level}`");
+					}
+					else
+					await ManageCharacter.UpdateAsync(Chr);
+				}
+			};
 		}
 
 		public async Task RunAsync() {
