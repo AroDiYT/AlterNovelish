@@ -15,7 +15,7 @@ namespace BotTemplate.Modules {
     [Group("Channel")]
     public class Channel : BaseCommandModule {
         [GroupCommand]
-        public async Task ChannelAsync(CommandContext ctx, DiscordChannel ch = null)
+        public async Task ChannelAsync(CommandContext ctx, [Description("Channel")]DiscordChannel ch = null)
         {
             ch = ch ?? ctx.Channel;
             var CH = await ManageCharacter.GetChannel(ch.Id);
@@ -31,7 +31,7 @@ namespace BotTemplate.Modules {
         }
         [Command("set")]
         [RequirePermissions(Permissions.ManageChannels)]
-        public async Task SetChannelAsync(CommandContext ctx, DiscordChannel ch = null)
+        public async Task SetChannelAsync(CommandContext ctx, [Description("Channel")]DiscordChannel ch = null)
         {
             ch = ch ?? ctx.Channel;
             async Task suicide(string why = "") {

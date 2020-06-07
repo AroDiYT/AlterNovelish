@@ -21,454 +21,165 @@ using BotTemplate.Objects.Json;
 using BotTemplate.Objects.Sql.Profile;
 using System.Collections.Concurrent;
 
-namespace BotTemplate.Helpers 
+namespace BotTemplate.Helpers
 {
-    public class Owners {
+    public class Owners
+    {
         public static ConcurrentDictionary<ulong, string> Owner { get; private set; }
         public static void InitCache()
         {
             Owner = new ConcurrentDictionary<ulong, string>();
             Owner.TryAdd(694104913210245240, "Owner");
-            Owner.TryAdd(339475044172431360,"CoOwner");
+            Owner.TryAdd(339475044172431360, "CoOwner");
             Owner.TryAdd(434824856161484800, "Staff");
-            }
+        }
         public static async Task<bool> CheckAsync(ulong ID)
         {
-            if(Owner.TryGetValue(ID, out var res))
+            if (Owner.TryGetValue(ID, out var res))
             {
                 return true;
             }
             return false;
         }
     }
-    public class Tools {
+    public class Tools
+    {
         public static Random RNG = new Random();
     }
-    public class Roll {
-        public int Attack { get; set; }
-        public int Defend { get; set; }
-        public int RNGA { get; set; }
-        public int RNGB { get; set; }
+    public enum FightOptions
+    {
+        Melee,
+        Ranged,
+        Magic
     }
-    public enum Effects {
-        Poison = 0,
-        Weakened = 1,
-        Paralysed = 2
-    }
-    public enum CastEffects {
-        burn,
-        bleed,
-        stun,
-        weaken,
-        drain
-    }
-    public class InEffect {
-        public int Author { get; set; }
-        public Effects Effect { get; set; }
-        public int Turns { get; set; }
-        public int Modifiers { get; set; }
-    }
-    
-    public static class Attack {
-        public static ConcurrentDictionary<int, InEffect> InEffect { get; private set; }
-        public static void InitCache()
+
+    public static class Attack
+    {
+        public static async Task<DiscordEmbed> RollAsync(Chr Author, Chr Target, FightOptions Option)
         {
-            InEffect = new ConcurrentDictionary<int, InEffect>();
-        }
-        public static async Task<DiscordEmbed> RollAsync(Modifiers Mod, ulong Author, ulong Target, Chr Chr, Chr TrChr)
-        {
-            var Base = 5;
-            
-            var A = Tools.RNG.Next(12) + 1;
-            var B = Tools.RNG.Next(12) + 1;
+            //Modifiers + Predefining.
+            int Attribute = 0;
+            bool Magic = false;
+            int Dodge = Target.Dodge;
+            switch (Option)
+            {
+                case FightOptions.Melee:
+                    Attribute += Author.Sleight;
+                    break;
+                case FightOptions.Ranged:
+                    Attribute += Author.Marksman;
+                    break;
+                case FightOptions.Magic:
+                    Attribute += Author.Magic;
+                    Magic = true;
+                    break;
+            }
+            //RNG Innit
+            var AuthorRoll = Helpers.Tools.RNG.Next(12) + 1;
+            var TargetRoll = Helpers.Tools.RNG.Next(12) + 1;
+            //Roll Msg #1
+            string Roll = $"{Author.Name} rolls ({Option}) against {Target.Name}";
+            string RollInit = $"`({AuthorRoll} + {Attribute})` **vs** `({TargetRoll} + {Dodge})`";
+            //Switch Win/Loss
+            var AuthorFull = AuthorRoll + Attribute;
+            var TargetFull = TargetRoll + Dodge;
 
-            var OA = A;
-            var OB = B;
+            string Situation = "";
+            int Visual = 0;
 
-            A += Mod.Attack;
-            B += Mod.Defend;
-            var Effected = "Effects:";
-            var Effect = await Helpers.Attack.DoEffects(Chr, Effected); 
-            if(Effect != null) {
-                Chr = Effect.Chr;
-            if(Effect.Effect == Effects.Paralysed)
-             A = 1;
-            if(Effect.Effect == Effects.Weakened)
-            {
-                A = A/2;
-                OA = OA/2;
-            }
-            }
-            else
-            Effect.Effected = "No effects";
+            int Damage = Author.Strenght + Helpers.Tools.RNG.Next(20) + 1;
+            if (Magic == true)
+                Damage = Author.MagicEff + Helpers.Tools.RNG.Next(15) + 1;
 
-            var Embed = new DiscordEmbedBuilder();
-            string Rolls = $"{Chr.Name} rolled {OA} + {A - OA}\nAgainst\n{TrChr.Name} rolled {OB} + {Mod.Defend}";
-            Embed = Embed.WithAuthor(Rolls);
-            Embed = Embed.AddField("​",Effect.Effected);
-            if(OA == 1)
+            if(Author.EffectPath != 0)
             {
-                Embed = Embed.WithDescription("Critically Failed, Nothing happened.");
+                if(Author.EffectPath == EffectPath.boost)
+                Damage += Author.EffectAtribute;
+                if(Author.EffectPath == EffectPath.weaken)
+                Damage -= Author.EffectAtribute;
+                if(Damage < 0)
+                Damage = 0;
+                Author.EffectAtribute = 0;
+                Author.EffectPath = 0;
+                await ManageCharacter.UpdateAsync(Author);
             }
-            else if(A > B)
+            if (AuthorFull == 0)
             {
-                if(OA == 12)
-                    Chr.Strenght += 5;
-                TrChr.HPC -= Chr.Strenght + (Mod.DamageBonus) + Base;
-                if(TrChr.HPC < 0)
-                        TrChr.HPC = 0;
-                Embed = Embed.WithDescription($"Succes;\n\n`{TrChr.Name}` **lost** `{Chr.Strenght + Base}` **hp, now at** `{TrChr.HPC}|{TrChr.HPM}`");
-                await ManageCharacter.UpdateAsync(TrChr);
-                if(OA == 12)
-                    Chr.Strenght -= 5;
-                Chr.XP += 4;
-                if(Chr.XP >= Convert.ToInt32(Chr.Level*100.57/4.2*Chr.Level))
-					{
-                        var olvl = Chr.Level;
-						begin:
-						Chr.XP -= Convert.ToInt32(Chr.Level*100.57/4.2*Chr.Level);
-						Chr.Level += 1;
-						Chr.SP += 5;
-						if(Chr.XP >= Convert.ToInt32(Chr.Level*100.57/4.2*Chr.Level))
-						goto begin;
-						await ManageCharacter.UpdateAsync(Chr);
-                        Embed = Embed.WithFooter("You've leveled up!");
-					}
-                else
-                await ManageCharacter.UpdateAsync(Chr);
+                Situation = $"{Author.Name} didn't even get near {Target.Name}";
+                Visual += 10;
+                Damage = 0;
             }
-            else if (A == B)
+            else if (AuthorFull > TargetFull)
             {
-                Embed = Embed.WithDescription("Both sides are even in their strenght and no damage has been done.");
-            }
-            else
-            {
-                Embed = Embed.WithDescription("Failed, Nothing happened.");
-            }
-            return Embed;
-        }
-        public static async Task<DiscordEmbed> MagicRollAsync(Modifiers Mod, ulong Author, ulong Target, Chr Chr, Chr TrChr)
-        {
-            var Base = 5;
-            
-            var A = Tools.RNG.Next(12) + 1;
-            var B = Tools.RNG.Next(12) + 1;
-
-            var OA = A;
-            var OB = B;
-
-            A += Mod.Attack;
-            B += Mod.Defend;
-
-            var Effected = "Effects:";
-            var Effect = await Helpers.Attack.DoEffects(Chr, Effected); 
-            if(Effect != null) {
-                Chr = Effect.Chr;
-            if(Effect.Effect == Effects.Paralysed)
-             A = 1;
-            if(Effect.Effect == Effects.Weakened)
-            {
-                A = A/2;
-                OA = OA/2;
-            }
-            }
-            else
-            Effect.Effected = "No effects";
-
-            var Embed = new DiscordEmbedBuilder();
-            string Rolls = $"{Chr.Name} rolled {OA} + {A - OA}\nAgainst\n{TrChr.Name} rolled {OB} + {Mod.Defend}";
-            Embed = Embed.WithAuthor(Rolls);
-            Embed = Embed.AddField("​",Effect.Effected);
-            if(OA == 1)
-            {
-                Embed = Embed.WithDescription("Critically Failed, Nothing happened.");
-            }
-            else if(A > B)
-            {
-                if(OA == 12)
-                    Chr.MagicEff += 5;
-                TrChr.HPC -= Chr.Strenght + (Mod.DamageBonus) + Base;
-                if(TrChr.HPC < 0)
-                        TrChr.HPC = 0;
-                Embed = Embed.WithDescription($"Succes;\n\n`{TrChr.Name}` **lost** `{Chr.MagicEff + Base}` **hp, now at** `{TrChr.HPC}|{TrChr.HPM}`");
-                await ManageCharacter.UpdateAsync(TrChr);
-                if(OA == 12)
-                    Chr.MagicEff -= 5;
-                Chr.XP += 4;
-                if(Chr.XP >= Convert.ToInt32(Chr.Level*100.57/4.2*Chr.Level))
-					{
-                        var olvl = Chr.Level;
-						begin:
-						Chr.XP -= Convert.ToInt32(Chr.Level*100.57/4.2*Chr.Level);
-						Chr.Level += 1;
-						Chr.SP += 5;
-						if(Chr.XP >= Convert.ToInt32(Chr.Level*100.57/4.2*Chr.Level))
-						goto begin;
-						await ManageCharacter.UpdateAsync(Chr);
-                        Embed = Embed.WithFooter("You've leveled up!");
-					}
-                else
-                await ManageCharacter.UpdateAsync(Chr);
-            }
-            else if (A == B)
-            {
-                Embed = Embed.WithDescription("Both sides are even in their strenght and no damage has been done.");
-            }
-            else
-            {
-                Embed = Embed.WithDescription("Failed, Nothing happened.");
-            }
-            return Embed;
-        }
-        public static async Task<DiscordEmbed> RollAsync(Modifiers Mod, ulong Author, Chr Chr, Chr TrChr)
-        {
-            var Base = 5;
-            
-            var A = Tools.RNG.Next(12) + 1;
-            var B = Tools.RNG.Next(12) + 1;
-
-            var OA = A;
-            var OB = B;
-
-            A += Mod.Attack;
-            B += Mod.Defend;
-
-            var Effected = "Effects:";
-            var Effect = await Helpers.Attack.DoEffects(Chr, Effected); 
-            if(Effect != null) {
-                Chr = Effect.Chr;
-            if(Effect.Effect == Effects.Paralysed)
-             A = 1;
-            if(Effect.Effect == Effects.Weakened)
-            {
-                A = A/2;
-                OA = OA/2;
-            }
-            }
-            else
-            Effect.Effected = "No effects";
-
-            var Embed = new DiscordEmbedBuilder();
-            string Rolls = $"{Chr.Name} rolled {OA} + {A - OA}\nAgainst\n{TrChr.Name} rolled {OB} + {Mod.Defend}";
-            Embed = Embed.WithAuthor(Rolls);
-            Embed = Embed.AddField("​",Effect.Effected);
-            if(OA == 1)
-            {
-                Embed = Embed.WithDescription("Critically Failed, Nothing happened.");
-            }
-            else if(A > B)
-            {
-                if(OA == 12)
-                    Chr.Strenght += 5;
-                TrChr.HPC -= Chr.Strenght + (Mod.DamageBonus) + Base;
-                if(TrChr.HPC < 0)
-                        TrChr.HPC = 0;
-                Embed = Embed.WithDescription($"Succes;\n\n`{TrChr.Name}` **lost** `{Chr.Strenght + Base}` **hp, now at** `{TrChr.HPC}|{TrChr.HPM}`");
-                await ManageCharacter.UpdateAsync(TrChr);
-                if(OA == 12)
-                    Chr.Strenght -= 5;
-                Chr.XP += 4;
-                if(Chr.XP >= Convert.ToInt32(Chr.Level*100.57/4.2*Chr.Level))
-					{
-                        var olvl = Chr.Level;
-						begin:
-						Chr.XP -= Convert.ToInt32(Chr.Level*100.57/4.2*Chr.Level);
-						Chr.Level += 1;
-						Chr.SP += 5;
-						if(Chr.XP >= Convert.ToInt32(Chr.Level*100.57/4.2*Chr.Level))
-						goto begin;
-						await ManageCharacter.UpdateAsync(Chr);
-                        Embed = Embed.WithFooter("You've leveled up!");
-					}
-                else
-                await ManageCharacter.UpdateAsync(Chr);
-            }
-            else if (A == B)
-            {
-                Embed = Embed.WithDescription("Both sides are even in their strenght and no damage has been done.");
-            }
-            else
-            {
-                Embed = Embed.WithDescription("Failed, Nothing happened.");
-            }
-            return Embed;
-        }
-         public static async Task<DiscordEmbed> MagicRollAsync(Modifiers Mod, ulong Author, Chr Chr, Chr TrChr)
-        {
-            var Base = 5;
-            
-            var A = Tools.RNG.Next(12) + 1;
-            var B = Tools.RNG.Next(12) + 1;
-
-            var OA = A;
-            var OB = B;
-
-            A += Mod.Attack;
-            B += Mod.Defend;
-
-            var Effected = "Effects:";
-            var Effect = await Helpers.Attack.DoEffects(Chr, Effected); 
-            if(Effect != null) {
-                Chr = Effect.Chr;
-            if(Effect.Effect == Effects.Paralysed)
-             A = 1;
-            if(Effect.Effect == Effects.Weakened)
-            {
-                A = A/2;
-                OA = OA/2;
-            }
-            }
-            else
-            Effect.Effected = "No effects";
-
-            var Embed = new DiscordEmbedBuilder();
-            string Rolls = $"{Chr.Name} rolled {OA} + {A - OA}\nAgainst\n{TrChr.Name} rolled {OB} + {Mod.Defend}";
-            Embed = Embed.WithAuthor(Rolls);
-            Embed = Embed.AddField("​",Effect.Effected);
-            if(OA == 1)
-            {
-                Embed = Embed.WithDescription("Critically Failed, Nothing happened.");
-            }
-            else if(A > B)
-            {
-                if(OA == 12)
-                    Chr.MagicEff += 5;
-                TrChr.HPC -= Chr.Strenght + (Mod.DamageBonus) + Base;
-                if(TrChr.HPC < 0)
-                        TrChr.HPC = 0;
-                Embed = Embed.WithDescription($"Succes;\n\n`{TrChr.Name}` **lost** `{Chr.MagicEff + Base}` **hp, now at** `{TrChr.HPC}|{TrChr.HPM}`");
-                await ManageCharacter.UpdateAsync(TrChr);
-                if(OA == 12)
-                    Chr.MagicEff -= 5;
-                Chr.XP += 4;
-                if(Chr.XP >= Convert.ToInt32(Chr.Level*100.57/4.2*Chr.Level))
-					{
-                        var olvl = Chr.Level;
-						begin:
-						Chr.XP -= Convert.ToInt32(Chr.Level*100.57/4.2*Chr.Level);
-						Chr.Level += 1;
-						Chr.SP += 5;
-						if(Chr.XP >= Convert.ToInt32(Chr.Level*100.57/4.2*Chr.Level))
-						goto begin;
-						await ManageCharacter.UpdateAsync(Chr);
-                        Embed = Embed.WithFooter("You've leveled up!");
-					}
-                else
-                await ManageCharacter.UpdateAsync(Chr);
-            }
-            else if (A == B)
-            {
-                Embed = Embed.WithDescription("Both sides are even in their strenght and no damage has been done.");
-            }
-            else
-            {
-                Embed = Embed.WithDescription("Failed, Nothing happened.");
-            }
-            return Embed;
-        }
-
-        public static async Task<bool> EffectsAsync(int Author, Effects Effect, int Turns, int Mods)
-        {
-            if(InEffect.ContainsKey(Author))
-            {
-                return false;
-            }
-            var EffC = new InEffect() {
-                Author = Author,
-                Effect = Effect,
-                Turns = Turns,
-                Modifiers = Mods
-            };
-            InEffect.TryAdd(Author, EffC);
-            return true;
-        }
-        public class DoEff {
-            public string Effected { get; set; }
-            public Effects Effect { get; set; }
-            public Chr Chr { get; set; }
-        }
-        public static async Task<DoEff> DoEffects(Chr Chr, string Effected)
-        {
-           var Doeff = new DoEff();
-           Doeff.Chr = Chr;
-            if(InEffect.TryGetValue(Chr.Entry, out var Eff))
-            {
-                Eff.Turns -= 1;
-                if(Eff.Turns > 0)
-                InEffect.TryUpdate(Chr.Entry, Eff, null);
-                if(Eff.Turns <= 0)
-                InEffect.TryRemove(Chr.Entry, out _);
-                switch(Eff.Effect)
+                if (AuthorRoll == 12)
+                    Damage += 5;
+                Situation = $"`{Author.Name}` **succesfully hitted** `{Target.Name}` **for** `{Damage}` **damage**";
+                Visual += 2;
+                if (Magic == true)
                 {
-                    case Effects.Paralysed:
-                    Effected += $"\n{Chr.Name} is paralysed and can't attack.";
-                    Doeff.Effect = Effects.Paralysed;
-                    Doeff.Effected = Effected;
-                    return Doeff;
-                    case Effects.Poison:
-                    Effected += $"\n{Chr.Name} is poisoned and loses {Eff.Modifiers} HP.";
-                    Chr.HPC -= Eff.Modifiers;
-                    if(Chr.HPC < 0)
-                        Chr.HPC = 0;
-                    await ManageCharacter.UpdateAsync(Chr);
-                    Doeff.Chr = Chr;
-                    Doeff.Effect = Effects.Poison;
-                    Doeff.Effected = Effected;
-                    return Doeff;
-                    case Effects.Weakened:
-                    Effected += $"\n{Chr.Name} is Weakened and loses half his strenght. (roll and damage lowered.)";
-                    Doeff.Effect = Effects.Weakened;
-                    Doeff.Effected = Effected;
-                    return Doeff;
+                    if (Author.ENC < 10)
+                    {
+                        Situation = "You do not have enough stamina to use Magic Attacks.";
+                        Visual += 10;
+                        Damage = 0;
+                    }
                 }
-                return null;
             }
-            return null;
-        }
-        public static async Task<InEffect> GetEffectsAsync(int Author)
-        {
-            if(!InEffect.ContainsKey(Author))
-                return null;
-            var res = new InEffect();
-            InEffect.TryGetValue(Author, out res);
-            return res;
+            else if (AuthorFull == TargetFull)
+            {
+                Situation = $"{Author.Name} went on even grounds as {Target.Name}";
+                Visual += 10;
+                Damage = 0;
+            }
+            else
+            {
+                Situation = $"{Author.Name} couldn't hit {Target.Name}";
+                Visual += 10;
+                Damage = 0;
+            }
+            //Create Msg
+            var Embed = new DiscordEmbedBuilder();
+            Embed = Embed.WithAuthor(Roll);
+            Embed = Embed.WithDescription(RollInit + "\n\n" + Situation + "\n" + $"**{Target.Name}** has `{Target.HPC - Damage + "|" + Target.HPM} HP` left");
+            //CheckIfDamage
+            if(Visual == 2)
+            {
+
+                    Target.HPC -= Damage;
+
+                    if (Target.HPC < 1)
+                    {
+                        Target.HPC = 0;
+                        Embed = Embed.WithFooter($"{Target.Name} died.");
+                    }
+
+                    await ManageCharacter.UpdateAsync(Target);
+
+                    if (Magic == true)
+                    {
+                        Author.ENC -= 10;
+                        await ManageCharacter.UpdateAsync(Author);
+                    }
+            }
+            //End Return
+            return Embed;
         }
     }
-    public static class Cast {
+    public static class Cast
+    {
         public static async Task Heal(int Value, Chr Chr)
         {
             Chr.HPC += Value;
-            if(Chr.HPC > Chr.HPM)
-            Chr.HPC = Chr.HPM;
+            if (Chr.HPC > Chr.HPM)
+                Chr.HPC = Chr.HPM;
             await ManageCharacter.UpdateAsync(Chr);
         }
         public static async Task Damage(int Value, Chr Chr)
         {
             Chr.HPC -= Value;
-            if(Chr.HPC < 0)
-            Chr.HPC = Chr.HPM;
+            if (Chr.HPC < 0)
+                Chr.HPC = Chr.HPM;
             await ManageCharacter.UpdateAsync(Chr);
-        }
-        public static async Task Effect(CastEffects Effect)
-        {
-            switch (Effect)
-            {
-                case CastEffects.bleed:
-
-                break;
-                case CastEffects.burn:
-
-                break;
-                case CastEffects.drain:
-
-                break;
-                case CastEffects.stun:
-
-                break;
-                case CastEffects.weaken:
-                
-                break;
-            }
         }
     }
 }

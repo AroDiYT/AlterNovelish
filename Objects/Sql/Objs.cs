@@ -1,9 +1,5 @@
+using BotTemplate.Managers;
 namespace BotTemplate.Objects.Sql.Profile {
-	public class Modifiers {
-		public int Attack { get; set; }
-		public int Defend { get; set; }
-		public int DamageBonus { get; set; }
-	}
 	public enum ChannelCategory {
 		Rp,
 		Chat,
@@ -19,20 +15,22 @@ namespace BotTemplate.Objects.Sql.Profile {
 		Account = 1,
 		Ownership = 2,
 		Inventory = 3,
-		Item = 4
+		Item = 4,
+		Issues = 5,
+		Suggest
 	}
-	
+
 		public class ChrGet {
 			public int Entry { get; set; }
 		}
-		
+
 
 		public class OwnerGet {
 			public ulong UID { get; set; }
 			public ulong GID { get; set; }
 			public int Slot { get; set; }
 		}
-		
+
 		public class AccountGet {
 			public ulong UID { get; set; }
 			public ulong GID { get; set; }
@@ -56,7 +54,7 @@ namespace BotTemplate.Objects.Sql.Profile {
 
 		 public int HPC { get; set; }
 		 public int HPM { get; set; }
-		 
+
 		 public int ENC { get; set; }
 		 public int ENM { get; set; }
 
@@ -78,17 +76,50 @@ namespace BotTemplate.Objects.Sql.Profile {
 		 public int XP { get; set; }
 
 		 public IsAlter IsAlter { get; set; }
+		 public int Marriage { get; set; }
 
 		 public int Balance { get; set; }
 
 		 public int InventoryID { get; set; }
 		 public int SP { get; set; }
+
+		//Lvl10
+		 public SubClasses SubClass { get; set; }
+		 public int SubClassAttribute { get; set; }
+		 public int UPoints { get; set; }
+
+		 public EffectPath EffectPath { get; set; }
+		 public int EffectAtribute { get; set; }
+
+		 public int KID { get; set; }
+		 public int PARENTA { get; set; }
+		 public int PARENTB { get; set; }
+
+		 public string Theme { get; set; }
+	 }
+	 public class UAbility {
+		 public int Entry { get; set; }
+		 public string Name { get; set; }
+		 public string Description { get; set; }
+		 public int Character { get; set; }
+		 public UPath Path { get; set; }
+		 public int Attribute { get; set; }
+	 }
+	 public enum UPath {
+		 None, damage, heal, drain, weaken, boost
+	 }
+	 public enum EffectPath {
+		 none, boost, weaken
+	 }
+	 public enum SubClasses {
+		 None, Berserker, Crusader, Swordsman, Balanced, Precision, Piercing, Priest, Wizard, Stealth, Tank
 	 }
 	 public class Ownership {
 		 public ulong UID { get; set; }
 		 public ulong GID { get; set; }
 		 public int CharEntry { get; set; }
 		 public int Slot { get; set; }
+		 public int Remind { get; set; }
 	 }
 	 public class Inventory {
 		 public int InventoryID { get; set; }
@@ -99,24 +130,35 @@ namespace BotTemplate.Objects.Sql.Profile {
 		 public int Entry { get; set; }
 		 public string Name { get; set; }
 		 public string Desc { get; set; }
-		 public ItemCategory Category { get; set; }
+		 public ManageCharacter.ItemCategory Category { get; set; }
 		 public int Attribute { get; set; }
+		 public int Effect { get; set; }
 		 public int Cost { get; set; }
+	 }
+	 public class Custom {
+		 public int Entry { get; set; }
+		 public int InventoryID { get; set; }
+		 public string Name { get; set; }
+		 public string Description { get; set; }
+		 public string Image { get; set; }
+		 public int Attribute { get; set; }
+		 public int Category { get; set; }
+		 public int Effect { get; set; }
+	 }
+	 public class Equiped {
+		 public int ChrEntry { get; set; }
+		 public int ItemID { get; set; }
+		 public int IsCustom { get; set; }
 	 }
 	 public class Account {
 		 public ulong UID { get; set; }
 		 public ulong GID { get; set; }
 		 public int Slot { get; set; }
+		 public int Snaps { get; set; }
 	 }
 	 public enum Gender {
 		 Female = 1,
 		 Male = 0
-	 }
-	 public enum ItemCategory {
-		 Weapon = 0,
-		 Food = 1,
-		 Armor = 2,
-		 Collectables = 3
 	 }
 	 public enum Race {
 		 Human = 0, //Town
@@ -128,7 +170,9 @@ namespace BotTemplate.Objects.Sql.Profile {
 		 Spirit = 6, //Astral
 		 Ghost = 7, //Astral
 		 Kitsune = 8, //Forest
-		 Dragonoid //Cave
+		 Dragonoid, //Cave
+		 Shapeshifter //Void
+
 	 }
 	 public enum Classes {
 		 Warrior = 0,
@@ -151,7 +195,7 @@ namespace BotTemplate.Objects.Sql.Profile {
 		 public GenderRace Spirit { get; set; }
 		 public GenderRace Ghost { get; set; }
 	 }
-	 
+
 	 public class GenderRace {
 		 public class Human {
 			 public string Male = "https://cdn.discordapp.com/attachments/708249001903783986/709723363869982740/c933117c7bff5ab14a1815458f472f03.png";
@@ -186,7 +230,7 @@ namespace BotTemplate.Objects.Sql.Profile {
 			 public string Male = "";
 			 public string Female = "";
 		 }*/
-		 
+
 }
 
 namespace BotTemplate.Objects.Sql.Note {

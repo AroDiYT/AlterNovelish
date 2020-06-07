@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
+using DSharpPlus.EventArgs;
+
+using BotTemplate;
 
 namespace BotTemplate {
 	public static class Interactivity {
@@ -67,6 +70,20 @@ namespace BotTemplate {
 			if (int.TryParse(r.Result.Content, out res) && res > -1)
 				return res;
 			}
+		}
+		public static async Task<DiscordUser> WaitForStealAsync(CommandContext ctx,
+				uint delay = 1000 * 120, DiscordChannel channel = null) {
+			var inter = ctx.Client.GetInteractivity();
+			channel = channel ?? ctx.Channel;
+
+			var result = await inter.WaitForMessageAsync(m => m.Channel == channel
+														 && m.Content.StartsWith(".claim") && !m.Author.IsBot);
+			if (result.TimedOut) {
+				await channel.SendMessageAsync("Timed out.");
+				return null;
+			}
+
+			return result.Result.Author;
 		}
 	}
 }
